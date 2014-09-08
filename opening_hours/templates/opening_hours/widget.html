@@ -1,65 +1,112 @@
-<style type="text/css">
-.time {
-    width: 40px;
-}
+<style> 
+.dismissable {
+    -webkit-transition: all 1s ease-in-out;
+    -moz-transition: all 1s ease-in-out;
+    -ms-transition: all 1s ease-in-out;
+    -o-transition: all 1s ease-in-out;
+    transition: all 1s ease-in-out;
+    opacity: 1;
 
-.hover { cursor: hand; cursor: pointer; }
+    -webkit-transform: translate(0px, 0px);
+    -moz-transform: translate(0px, 0px);
+    -ms-transform: translate(0px, 0px);
+    -o-transform: translate(0px, 0px);
+    transform: translate(0px, 0px);
+}
+.dismissed {
+    -webkit-transition: all 1s ease-in-out;
+    -moz-transition: all 1s ease-in-out;
+    -ms-transition: all 1s ease-in-out;
+    -o-transition: all 1s ease-in-out;
+    transition: all 1s ease-in-out;
+    opacity: 0;
+
+    -webkit-transform: translate(500px, 0px);
+    -moz-transform: translate(500px, 0px);
+    -ms-transform: translate(500px, 0px);
+    -o-transform: translate(500px, 0px);
+    transform: translate(500px, 0px);
+}
+.time-input {
+    width: 33px;
+}
+.day-label,.day-inputs,.input-row,.row-buttons {
+    display: inline-block;
+}
+.day-inputs {
+    margin-left: 10px;
+}
+.input-row {
+    border-width: 1px;
+    border-bottom-style: dotted;
+    border-color: rgb(240, 228, 228);
+    padding-bottom: 2px;
+    margin-right: 7px;
+    margin-left: 7px;
+}
 </style>
-<script type="text/javascript">
 
-function is_time(val){
-    return val.match(/\d+:\d+/) != null && val.match(/\d+:\d+/).length == 1 && val.match(/\d+:\d+/)[0] == val;
+<input id="{{name}}_input_in" type="hidden" value='{{value|safe}}'>
+<input id="{{name}}_input_out" type="hidden" name="{{name}}" value="">
+
+<script type="text/javascript">
+function check_day(day)
+{
+  document.getElementById(day + '-inputs').classList.toggle("dismissed");
 }
+
+function delete_row(day)
+{
+  json = get_json()
+  json[day].pop();
+  set_json(json);
+  parent = document.getElementById(day + '-inputs');
+  parent.childNodes[parent.childNodes.length - 1].classList.add("dismissed");
+  document.getElementById(day + '-delete-row').disabled = true;
+  setTimeout(function(){
+    parent = document.getElementById(day + '-inputs');
+    parent.removeChild(parent.childNodes[parent.childNodes.length - 1]);
+    if (parent.childNodes.length != 1)
+      document.getElementById(day + '-delete-row').disabled = false;
+  }, 1010);
+}
+
+function add_row(day)
+{
+  json = get_json()
+  json[day].push(["", ""]);
+  set_json(json);
+  parent = document.getElementById(day + '-inputs');
+  new_row = document.createElement("div");
+  new_row.setAttribute("class", day + " input-row dismissable dismissed");
+  new_row.innerHTML = "<input class=\"time-input from " + day + "\" type=\"text\" onchange=\"dumps()\"> to <input class=\"time-input to " + day + "\" type=\"text\" onchange=\"dumps()\">";
+  parent.appendChild(new_row);
+  document.getElementById(day + '-delete-row').disabled = false;
+  setTimeout(function(){document.getElementById(day + '-inputs').childNodes[parent.childNodes.length - 1].classList.remove("dismissed");},10);
+}
+
 
 function get_json() {
-    return JSON.parse(django.jQuery("#{{name}}_input_out").val());
+    return JSON.parse(document.getElementById("{{name}}_input_out").value);
 }
 
 function set_json(json) {
-    django.jQuery("#{{name}}_input_out").val(JSON.stringify(json));
-}
-
-function add(day) {
-    json = get_json()
-    json[day].push(["", ""]);
-    django.jQuery(".{{name}}_ajax").remove();
-    set_json(json);
-    loads(json);
-
-}
-
-function rm(day) {
-    json = get_json()
-    if(confirm('remove this opening hours?')) {
-        json[day].pop();
-        django.jQuery(".{{name}}_ajax").remove();
-        set_json(json);
-        loads(json);
-    }
+    document.getElementById("{{name}}_input_out").value = JSON.stringify(json);
 }
 
 function dumps(){
     json = get_json();
-    ["mo", "tu", "we", "th", "fr", "sa", "su"].forEach(function (day) {
-        json[day+"_note"] = django.jQuery("#"+day+"_note").val();
-        for (l = 0; l < json[day].length; l++) {
-            val = django.jQuery("#"+day+"_"+l+"_from").val();
-            json[day][l][0] = val;
-            if (is_time(val)){
-                django.jQuery("#"+day+"_"+l+"_from").attr("style", "border: 1px solid #ccc;");
-            }
-            else {
-                django.jQuery("#"+day+"_"+l+"_from").attr("style", "border: 1px solid red;");
-            }
-
-            val = django.jQuery("#"+day+"_"+l+"_to").val();
-            json[day][l][1] = val;
-            if (is_time(val)){
-                django.jQuery("#"+day+"_"+l+"_to").attr("style", "border: 1px solid #ccc;");
-            }
-            else {
-                django.jQuery("#"+day+"_"+l+"_to").attr("style", "border: 1px solid red;");
-            }
+    ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].forEach(function (day) {
+        if (document.getElementById(day + "-checkbox").checked) {
+            json[day + "_note"] = "true";
+        }
+        else {
+            json[day + "_note"] = "false";
+        }
+        inputs = document.getElementsByClassName(day + " input-row");
+        for (l = 0; l < inputs.length; l++) {
+            json[day][l][0] = inputs[l].childNodes[0].value;
+            json[day][l][1] = inputs[l].childNodes[2].value;
         }
     });
     set_json(json);
@@ -67,57 +114,32 @@ function dumps(){
 
 function loads(){
     json = get_json();
-    get_days().forEach(function (day) {
-        if (! django.jQuery("."+day).length) {
-            django.jQuery("#{{name}}_opening_hours_table").append("<tr class=\""+day+" day\"><td>"+day+"</td></tr>");
-        }
+    ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].forEach(function (day) {
+        new_day = document.createElement("div");
+        new_day.setAttribute("id", day);
+        var innerHtml = "<div id=\"" + day + "-label\" class=\"day-label\">" + day + "&nbsp;<input id=\"" + day + "-checkbox\" type=\"checkbox\" onclick=\"check_day('" + day + "');\"></div><div id=\"" + day + "-inputs\" class=\"day-inputs dismissable dismissed\"><div class=\"row-buttons\"><input id=\"" + day + "-add-row\" type=\"button\" class=\"button tiny success btn btn-xs btn-success\" value=\"Add row\" onclick=\"add_row('" + day + "');\"><input id=\"" + day + "-delete-row\" type=\"button\" class=\"button tiny alert btn btn-xs btn-danger\" value=\"Delete row\" onclick=\"delete_row('" + day + "');\" disabled></div>";
         for (l = 0; l < json[day].length; l++) {
-            django.jQuery("."+day).append("<td class=\"{{name}}_ajax\"><input type=\"text\" id=\""+day+"_"+l+"_from\" name=\""+day+"_"+l+"_from\" value=\""+json[day][l][0]+"\" class=\"time\"></td><td class=\"{{name}}_ajax\"><input type=\"text\" id=\""+day+"_"+l+"_to\" name=\""+day+"_"+l+"_to\" value=\""+json[day][l][1]+"\" class=\"time\"></td>")
+            innerHtml = innerHtml + "<div class=\"" + day + " input-row\"><input class=\"time-input from " + day + "\" type=\"text\" value=\"" + json[day][l][0] + "\"> to <input class=\"time-input to " + day + "\" type=\"text\" value=\"" + json[day][l][1] + "\"></div>";
         }
-        django.jQuery("."+day).append("<td class=\"{{name}}_ajax\" colspan=\"10\"><input type=\"text\" id=\""+day+"_note\" value=\""+json[day+"_note"]+"\" placeholder=\"note\">&nbsp;<img class=\"hover\" onclick=\"add('"+day+"');\" src=\"{{STATIC_URL}}admin/img/icon_addlink.gif\"></a>&nbsp;<img  class=\"hover\" onclick=\"rm('"+day+"');\" src=\"{{STATIC_URL}}admin/img/icon-no.gif\"></td>");
+        new_day.innerHTML = innerHtml + "</div>";
+        document.getElementsByClassName("field-{{name}}")[0].childNodes[1].appendChild(new_day);
+        if (json[day + "_note"] == "true")
+        {
+            document.getElementById(day + "-checkbox").checked = true;
+            check_day(day);
+        }
+        else
+            document.getElementById(day + "-checkbox").checked = false;
     });
-    set_json(json);
 }
 
-function get_days(){
-    json = get_json();
-    if (json["first_day"] == "su"){
-        return ["su", "mo", "tu", "we", "th", "fr", "sa"];
-    }
-    else {
-        return ["mo", "tu", "we", "th", "fr", "sa", "su"];
-    }
-}
-
-django.jQuery(document).ready(function(){
-    django.jQuery("#{{name}}_input_out").val(django.jQuery("#{{name}}_input_in").val())
-
-    json = get_json()
-    if (! json.hasOwnProperty("first_day")) json["first_day"] = "mo";
-    django.jQuery("#{{name}}_first_day").val(json["first_day"]);
-    set_json(json);
-
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById("{{name}}_input_out").value = document.getElementById("{{name}}_input_in").value;
     loads();
-    setInterval(dumps, 100);
-
-    setInterval(function (){
-        json = get_json();
-        if (django.jQuery("#{{name}}_first_day").val() != json["first_day"]) {
-            json["first_day"] = django.jQuery("#{{name}}_first_day").val();
-            set_json(json);
-            django.jQuery(".day").remove();
-            loads();
-        }
-    }, 100);
-})
+    var x = document.getElementsByTagName("input");
+    var i;
+    for (i = 0; i < x.length; i++) {
+        x[i].addEventListener("change", dumps);
+    }
+}, false);
 </script>
-first day of week
-<select id="{{name}}_first_day">
-    <option value="mo">mo</option>
-    <option value="su">su</option>
-</select>
-<input id="{{name}}_input_in" type="hidden" value='{{value|safe}}'>
-<input id="{{name}}_input_out" type="hidden" name="{{name}}" value="">
-<table id="{{name}}_opening_hours_table">
-
-</table>

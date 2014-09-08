@@ -12,7 +12,7 @@ class OpeningHoursWidget(Widget):
     template = "opening_hours/widget.html"
     def render(self, name, value, attrs=None):
         if not value:
-            value = '{"first_day": "mo", "mo": [], "tu":[], "we":[], "th":[], "fr":[], "sa":[], "su":[], "mo_note": "", "tu_note": "", "we_note":"", "th_note":"", "fr_note":"", "sa_note":"", "su_note":""}'
+            value = '{"Monday": [], "Tuesday":[], "Wednesday":[], "Thursday":[], "Friday":[], "Saturday":[], "Sunday":[], "Monday_note": "", "Tuesday_note": "", "Wednesday_note":"", "Thursday_note":"", "Friday_note":"", "Saturday_note":"", "Sunday_note":""}'
         if type(value) == dict:
             value = json.dumps(value)
         return mark_safe(loader.render_to_string(self.template, {

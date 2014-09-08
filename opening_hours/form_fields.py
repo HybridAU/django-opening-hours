@@ -24,7 +24,7 @@ class OpeningHoursField(forms.CharField):
             return False
 
         data = json.loads(value)
-        for day in ["mo", "tu", "we", "th", "fr", "sa", "su"]:
+        for day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]:
             for d in data[day]:
                 if not is_time(d[0]) or not is_time(d[1]):
                     raise ValidationError("Time not valid")

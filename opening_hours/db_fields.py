@@ -5,7 +5,7 @@ import widgets
 import json
 
 
-DEFAULT_OPENING_HOURS_JSON = '{"we_note": "false", "fr_note": "false", "fr": [], "su_note": "false", "mo_note": "false", "mo": [], "tu": [], "th_note": "false", "we": [], "su": [], "tu_note": "false", "th": [], "sa_note": "false", "sa": [], "first_day": "mo"}'
+DEFAULT_OPENING_HOURS_JSON = '{"Wednesday_note": "false", "Friday_note": "false", "Friday": [], "Sunday_note": "false", "Monday_note": "false", "Monday": [], "Tuesday": [], "Thursday_note": "false", "Wednesday": [], "Sunday": [], "Tuesday_note": "false", "Thursday": [], "Saturday_note": "false", "Saturday": []}'
 
 class OpeningHoursField(with_metaclass(models.SubfieldBase, models.Field)):
     def __init__(self, *args, **kwargs):
