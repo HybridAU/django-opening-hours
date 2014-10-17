@@ -122,7 +122,7 @@ function loads(){
             innerHtml = innerHtml + "<div class=\"" + day + " input-row\"><input class=\"time-input from " + day + "\" type=\"text\" value=\"" + json[day][l][0] + "\"> to <input class=\"time-input to " + day + "\" type=\"text\" value=\"" + json[day][l][1] + "\"></div>";
         }
         new_day.innerHTML = innerHtml + "</div>";
-        document.getElementsByClassName("field-{{name}}")[0].childNodes[1].appendChild(new_day);
+        document.getElementsByClassName("field-{{name}}")[0].getElementsByTagName("div")[0].appendChild(new_day);
         if (json[day + "_note"] == "true")
         {
             document.getElementById(day + "-checkbox").checked = true;
