@@ -1,11 +1,21 @@
 from django.db import models
 from django.utils.six import with_metaclass
-import form_fields
-import widgets
+from . import form_fields
+from . import widgets
 import json
+import sys
 
 
-DEFAULT_OPENING_HOURS_JSON = '{"Wednesday_note": "false", "Friday_note": "false", "Friday": [], "Sunday_note": "false", "Monday_note": "false", "Monday": [], "Tuesday": [], "Thursday_note": "false", "Wednesday": [], "Sunday": [], "Tuesday_note": "false", "Thursday": [], "Saturday_note": "false", "Saturday": []}'
+DEFAULT_OPENING_HOURS_JSON = ('{"Monday": [], "Monday_note": "false", '
+                             '"Tuesday": [], "Tuesday_note": "false", '
+                             '"Wednesday": [], "Wednesday_note": "false", '
+                             '"Thursday": [], "Thursday_note": "false", '
+                             '"Friday": [], "Friday_note": "false", '
+                             '"Sunday": [], "Sunday_note": "false", '
+                             '"Saturday": [], "Saturday_note": "false"}')
+
+if sys.version_info[0] == 3:
+    unicode = str
 
 class OpeningHoursField(with_metaclass(models.SubfieldBase, models.Field)):
     def __init__(self, *args, **kwargs):

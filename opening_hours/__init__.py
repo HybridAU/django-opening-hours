@@ -1,1 +1,1 @@
-from utils import is_open
+from . import utils.is_open
