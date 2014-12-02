@@ -2,7 +2,7 @@ from django import forms
 from django.db.models import get_model
 from django.core.exceptions import ValidationError
 
-from . import widgets.OpeningHoursWidget
+from .widgets import OpeningHoursWidget
 
 from django.forms import widgets
 
